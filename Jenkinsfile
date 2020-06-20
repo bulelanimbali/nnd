@@ -11,32 +11,21 @@ pipeline {
       }
     }
 
-    stage('Test'){
-        steps {
-            sh 'make check'
-        }
-    }
-    stage('Deploy') {
-        steps {
-            sh 'make publish'
-        }
+    stage('Security Scan') {
+      steps {
+        aquaMicroscanner(imageName: 'alpine:latest', notCompleted: 'exit 1', onDisallowed: 'fail')
+      }
     }
 
-    // stage('Security Scan') {
-    //   steps {
-    //     aquaMicroscanner(imageName: 'alpine:latest', notCompleted: 'exit 1', onDisallowed: 'fail')
-    //   }
-    // }
+    stage('Upload to AWS') {
+      steps {
+        withAWS(region: 'us-west-1', credentials: 'aws-static') {
+          sh 'echo "Uploading content with AWS creds"'
+          s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file: 'index.html', bucket: 'static-jenkins-pipeline')
+        }
 
-    // stage('Upload to AWS') {
-    //   steps {
-    //     withAWS(region: 'us-east-2', credentials: 'aws-static') {
-    //       sh 'echo "Uploading content with AWS creds"'
-    //       s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file: 'index.html', bucket: 'static-jenkins-pipeline')
-    //     }
-
-    //   }
-    // }
+      }
+    }
 
   }
 }
