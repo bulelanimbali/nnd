@@ -11,6 +11,17 @@ pipeline {
       }
     }
 
+    stage('Test'){
+        steps {
+            sh 'make check'
+        }
+    }
+    stage('Deploy') {
+        steps {
+            sh 'make publish'
+        }
+    }
+
     // stage('Security Scan') {
     //   steps {
     //     aquaMicroscanner(imageName: 'alpine:latest', notCompleted: 'exit 1', onDisallowed: 'fail')
